@@ -2,9 +2,9 @@
 
 ## Overview
 
-Based on the provided Postman collection.&#x20;
+Based on the provided Postman collection.
 Base URL: `{{baseUrl}}`
-Authentication: **Bearer Token** – store it as `authToken` in your active environment and set collection-level auth to “Bearer Token → `{{authToken}}`”.
+Authentication: **Bearer Token** – store it as `authToken` in your active environment and set collection-level auth to "Bearer Token → `{{authToken}}`".
 Rate Limits: *TBD*
 
 ---
@@ -142,16 +142,14 @@ List areas created by user `4711`.
 ```
 
 **Key helper endpoints**
-
-| Purpose                   | Method & Path                                                             |
-| ------------------------- | ------------------------------------------------------------------------- |
-| Update convoy meta        | `POST /api/Variant/Convoys/UpdateConvoy`                                  |
-| Archive / Unarchive       | `GET /ArchiveConvoy/:id/:actionBy` & `GET /UnarchiveConvoy/:id/:actionBy` |
-| Delete                    | `GET /DeleteConvoy/:id/:actionBy`                                         |
-| Add point                 | `POST /AddPoint`                                                          |
-| Get points                | `GET /GetPoints/:convoyId`                                                |
-| Archive / Unarchive point | `GET /ArchivePoint/:id/:actionBy` & `GET /UnarchivePoint/:id/:actionBy`   |
-
+| Purpose                   | Method & Path                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| Update convoy meta        | `POST /api/Variant/Convoys/UpdateConvoy`                                            |
+| Archive / Unarchive       | `GET /ArchiveConvoy/:id/:actionBy` & `GET /UnarchiveConvoy/:id/:actionBy`           |
+| Delete                    | `GET /DeleteConvoy/:id/:actionBy`                                                   |
+| Add point                 | `POST /AddPoint`                                                                    |
+| Get points                | `GET /GetPoints/:convoyId`                                                          |
+| Archive / Unarchive point | `GET /ArchivePoint/:id/:actionBy` & `GET /UnarchivePoint/:id/:actionBy`             |
 ---
 
 ## **Additional Modules**

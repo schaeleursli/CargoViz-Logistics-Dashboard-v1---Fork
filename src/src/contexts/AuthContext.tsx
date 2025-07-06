@@ -1,90 +1,98 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
-import { cargoVizAPI } from '../services/cargoVizAPI';
-import { User } from '../services/cargoVizAPI';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { cargoVizAPI, User } from '../services/cargoVizAPI';
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<{
-    success: boolean;
-    user?: User;
-    error?: string;
-  }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; user?: User; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
 }
+
 const AuthContext = createContext<AuthContextType | null>(null);
+
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 };
+
 interface AuthProviderProps {
   children: React.ReactNode;
 }
-export const AuthProvider: React.FC<AuthProviderProps> = ({
-  children
-}) => {
+
+/* Keys used throughout the app */
+const TOKEN_KEY = 'cargoviz_token';
+const USER_KEY = 'cargoviz_user';
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  /** Bootstraps auth state on first render */
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-  const checkAuthStatus = () => {
-    const token = localStorage.getItem('cargoviz_token');
-    const userData = localStorage.getItem('cargoviz_user');
-    if (token && userData) {
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const storedUser = localStorage.getItem(USER_KEY);
+    if (storedToken && storedUser) {
       try {
-        setUser(JSON.parse(userData));
+        setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
-      } catch (e) {
-        // If JSON parsing fails, clear the invalid data
-        localStorage.removeItem('cargoviz_token');
-        localStorage.removeItem('cargoviz_user');
+      } catch {
+        /* Corrupt JSON → clear the bad data */
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
       }
     }
     setLoading(false);
-  };
+  }, []);
+
+  /** Logs the user in and persists token/user in localStorage */
   const login: AuthContextType['login'] = async (email, password) => {
     try {
       const res = await cargoVizAPI.login(email, password);
-      // Guard against empty / malformed payloads
-      if (!res || !res.token || !res.user) {
+
+      if (!res?.token || !res?.user) {
         throw new Error('Invalid credentials or empty response from server');
       }
-      // Persist session
-      localStorage.setItem('cargoviz_token', res.token);
-      localStorage.setItem('cargoviz_user', JSON.stringify(res.user));
+
+      localStorage.setItem(TOKEN_KEY, res.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
       setUser(res.user);
       setIsAuthenticated(true);
-      return {
-        success: true,
-        user: res.user
-      };
-    } catch (error) {
-      // Axios errors come through the ApiClient interceptor as ApiError
-      const message = error instanceof Error ? error.message : 'Login failed – unknown error';
-      console.error('[Auth] login error:', error);
-      return {
-        success: false,
-        error: message
-      };
+
+      return { success: true, user: res.user };
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Login failed – unknown error';
+      console.error('[Auth] login error:', err);
+      return { success: false, error: msg };
     }
   };
+
+  /** Clears session from memory and localStorage */
   const logout = () => {
-    localStorage.removeItem('cargoviz_token');
-    localStorage.removeItem('cargoviz_user');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setUser(null);
     setIsAuthenticated(false);
   };
-  const value = {
+
+  const value: AuthContextType = {
     user,
     login,
     logout,
     isAuthenticated,
-    loading
+    loading,
   };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/lib/queryClient';
 import Layout from './components/layout/Layout';
@@ -10,6 +10,8 @@ import Reporting from './components/modules/Reporting';
 import Login from './src/components/auth/Login';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { WebSocketProvider } from './src/contexts/WebSocketContext';
+import { installAuthInterceptor } from './src/services/apiClient';
+import ErrorBoundary from './src/components/ErrorBoundary';
 export type ModuleType = 'space' | 'cargo' | 'yard' | 'reporting';
 const ProtectedRoute = ({
   children
@@ -33,6 +35,11 @@ const AppContent = () => {
   const {
     isAuthenticated
   } = useAuth();
+  const navigate = useNavigate();
+  // Install auth interceptor
+  useEffect(() => {
+    installAuthInterceptor(navigate);
+  }, [navigate]);
   const renderModule = () => {
     switch (activeModule) {
       case 'space':
@@ -59,13 +66,15 @@ const AppContent = () => {
     </Routes>;
 };
 export function App() {
-  return <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <WebSocketProvider>
-          <Router>
-            <AppContent />
-          </Router>
-        </WebSocketProvider>
-      </AuthProvider>
-    </QueryClientProvider>;
+  return <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <WebSocketProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </WebSocketProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>;
 }

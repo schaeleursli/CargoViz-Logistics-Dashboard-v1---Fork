@@ -1,10 +1,9 @@
 import React from 'react';
-import './index.css';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
-// Developer warning for missing API URL using more reliable check
-const isDevelopment = process.env.NODE_ENV === 'development';
-if (isDevelopment && (typeof __API_URL__ === 'undefined' || !__API_URL__)) {
+import './index.css';
+// Developer warning for missing API URL
+if (import.meta.env.DEV && (typeof __API_URL__ === 'undefined' || !__API_URL__)) {
   // eslint-disable-next-line no-console
   console.warn('⚠️  VITE_CARGOVIZ_API_URL is missing; default endpoint in use.');
 }

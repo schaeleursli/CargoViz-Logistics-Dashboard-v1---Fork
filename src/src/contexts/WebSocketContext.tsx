@@ -36,16 +36,18 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   });
   // Update WebSocket URL from environment if available
   useEffect(() => {
-    if (typeof window !== 'undefined' && window._env_?.REACT_APP_CARGOVIZ_WS_URL) {
-      setOptions(prev => ({
-        ...prev,
-        url: window._env_.REACT_APP_CARGOVIZ_WS_URL!
-      }));
-    }
+    // Check for the WebSocket URL in various places
+    const wsUrl = typeof __API_URL__ !== 'undefined' && __API_URL__ ? __API_URL__.replace('api', 'ws') : window._env_?.CARGOVIZ_WS_URL ?? 'wss://api.cargoviz.com/ws';
+    setOptions(prev => ({
+      ...prev,
+      url: wsUrl
+    }));
   }, []);
+  // In development, we'll simulate a connected WebSocket
+  const isDevelopment = process.env.NODE_ENV === 'development' || false;
   // Only connect to WebSocket if user is authenticated
   const {
-    isConnected,
+    isConnected: wsConnected,
     messages,
     error,
     sendMessage
@@ -53,6 +55,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     ...options,
     url: ''
   });
+  // For development, override the connected state
+  const isConnected = isDevelopment ? true : wsConnected;
   // Join organization channel when connected
   useEffect(() => {
     if (isConnected && user?.organizationId) {

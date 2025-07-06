@@ -16,7 +16,11 @@
     "@tanstack/react-query": "^5.56.2",
     "lucide-react": "^0.441.0",
     "leaflet": "^1.9.4",
-    "axios": "^1.7.7"
+    "axios": "^1.7.7",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "path": "^0.12.7",
+    "@playwright/test": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.11.18",

@@ -1,11 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { cargoVizAPI } from '../services/cargoVizAPI';
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { User } from '../services/cargoVizAPI';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<{
@@ -41,8 +36,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     const token = localStorage.getItem('cargoviz_token');
     const userData = localStorage.getItem('cargoviz_user');
     if (token && userData) {
-      setUser(JSON.parse(userData));
-      setIsAuthenticated(true);
+      try {
+        setUser(JSON.parse(userData));
+        setIsAuthenticated(true);
+      } catch (e) {
+        // If JSON parsing fails, clear the invalid data
+        localStorage.removeItem('cargoviz_token');
+        localStorage.removeItem('cargoviz_user');
+      }
     }
     setLoading(false);
   };
@@ -52,6 +53,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
         token,
         user: userData
       } = await cargoVizAPI.login(email, password);
+      // Store auth data in localStorage
+      localStorage.setItem('cargoviz_token', token);
+      localStorage.setItem('cargoviz_user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
       return {

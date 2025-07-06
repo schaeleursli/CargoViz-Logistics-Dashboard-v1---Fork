@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cargoVizAPI, Area, Cargo, Project, Organization, CreateAreaRequest, UpdateAreaRequest, CreateCargoRequest, UpdateCargoRequest } from '../services/cargoVizAPI';
+import { ApiError } from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
 
 // Projects
@@ -8,7 +9,7 @@ export const useProjects = () => {
   const {
     user
   } = useAuth();
-  return useQuery({
+  return useQuery<Project[], ApiError>({
     queryKey: ['projects', user?.id],
     queryFn: () => cargoVizAPI.getProjectsForUser(user!.id),
     enabled: !!user?.id
@@ -20,7 +21,7 @@ export const useOrganization = () => {
   const {
     user
   } = useAuth();
-  return useQuery({
+  return useQuery<Organization, ApiError>({
     queryKey: ['organization', user?.id],
     queryFn: () => cargoVizAPI.getMyOrganization(user!.id),
     enabled: !!user?.id
@@ -32,7 +33,7 @@ export const useAreas = () => {
   const {
     data: organization
   } = useOrganization();
-  return useQuery({
+  return useQuery<Area[], ApiError>({
     queryKey: ['areas', organization?.id],
     queryFn: () => cargoVizAPI.getAreas(organization!.id),
     enabled: !!organization?.id
@@ -43,8 +44,8 @@ export const useCreateArea = () => {
   const {
     data: organization
   } = useOrganization();
-  return useMutation({
-    mutationFn: (data: Omit<CreateAreaRequest, 'organizationId'>) => cargoVizAPI.createArea({
+  return useMutation<Area, ApiError, Omit<CreateAreaRequest, 'organizationId'>>({
+    mutationFn: data => cargoVizAPI.createArea({
       ...data,
       organizationId: organization!.id
     }),
@@ -57,8 +58,8 @@ export const useCreateArea = () => {
 };
 export const useUpdateArea = (areaId: string) => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: UpdateAreaRequest) => cargoVizAPI.updateArea(areaId, data),
+  return useMutation<Area, ApiError, UpdateAreaRequest>({
+    mutationFn: data => cargoVizAPI.updateArea(areaId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['areas']
@@ -68,7 +69,7 @@ export const useUpdateArea = (areaId: string) => {
 };
 export const useDeleteArea = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<void, ApiError, string>({
     mutationFn: (areaId: string) => cargoVizAPI.deleteArea(areaId),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -83,7 +84,7 @@ export const useCargo = () => {
   const {
     data: organization
   } = useOrganization();
-  return useQuery({
+  return useQuery<Cargo[], ApiError>({
     queryKey: ['cargo', organization?.id],
     queryFn: () => cargoVizAPI.getCargo(organization!.id),
     enabled: !!organization?.id
@@ -94,8 +95,8 @@ export const useCreateCargo = () => {
   const {
     data: organization
   } = useOrganization();
-  return useMutation({
-    mutationFn: (data: Omit<CreateCargoRequest, 'organizationId'>) => cargoVizAPI.createCargo({
+  return useMutation<Cargo, ApiError, Omit<CreateCargoRequest, 'organizationId'>>({
+    mutationFn: data => cargoVizAPI.createCargo({
       ...data,
       organizationId: organization!.id
     }),
@@ -108,8 +109,8 @@ export const useCreateCargo = () => {
 };
 export const useUpdateCargo = (cargoId: string) => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: UpdateCargoRequest) => cargoVizAPI.updateCargo(cargoId, data),
+  return useMutation<Cargo, ApiError, UpdateCargoRequest>({
+    mutationFn: data => cargoVizAPI.updateCargo(cargoId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['cargo']
@@ -119,7 +120,7 @@ export const useUpdateCargo = (cargoId: string) => {
 };
 export const useDeleteCargo = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<void, ApiError, string>({
     mutationFn: (cargoId: string) => cargoVizAPI.deleteCargo(cargoId),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -130,8 +131,9 @@ export const useDeleteCargo = () => {
 };
 
 // Legacy hooks for backward compatibility
+// These should be deprecated and removed in future versions
 export const useProjectsLegacy = () => {
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -161,7 +163,7 @@ export const useProjectsLegacy = () => {
   };
 };
 export const useOrganizationLegacy = () => {
-  const [organization, setOrganization] = useState<any>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -191,7 +193,7 @@ export const useOrganizationLegacy = () => {
   };
 };
 export const useAreasLegacy = () => {
-  const [areas, setAreas] = useState([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -205,7 +207,7 @@ export const useAreasLegacy = () => {
   const fetchAreas = async () => {
     try {
       setLoading(true);
-      const response = await cargoVizAPI.getAreas(organization.id);
+      const response = await cargoVizAPI.getAreas(organization!.id);
       setAreas(response || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch areas');
@@ -221,7 +223,7 @@ export const useAreasLegacy = () => {
   };
 };
 export const useCargoLegacy = () => {
-  const [cargo, setCargo] = useState([]);
+  const [cargo, setCargo] = useState<Cargo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -235,7 +237,7 @@ export const useCargoLegacy = () => {
   const fetchCargo = async () => {
     try {
       setLoading(true);
-      const response = await cargoVizAPI.getCargo(organization.id);
+      const response = await cargoVizAPI.getCargo(organization!.id);
       setCargo(response || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch cargo');

@@ -135,7 +135,8 @@ export const useWebSocket = (options: WebSocketOptions) => {
 };
 // Specialized hook for convoy tracking
 export const useConvoyTracking = (convoyId: string, options: Omit<WebSocketOptions, 'url'> = {}) => {
-  const wsUrl = typeof window !== 'undefined' && window._env_ ? window._env_.REACT_APP_CARGOVIZ_WS_URL || 'wss://api.cargoviz.com/ws' : 'wss://api.cargoviz.com/ws';
+  const wsUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__.replace('api', 'ws') // Convert API URL to WebSocket URL
+  : (window as any)._env_?.CARGOVIZ_WS_URL ?? 'wss://api.cargoviz.com/ws';
   const {
     isConnected,
     messages,

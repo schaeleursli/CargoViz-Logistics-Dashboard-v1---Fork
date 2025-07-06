@@ -1,5 +1,9 @@
 import { ApiClient, unwrap } from './apiClient';
 import { mockAreas, mockCargo, mockUser, mockOrganization, mockProjects } from './mockData';
+export type LoginResponse = {
+  token: string;
+  user: User;
+};
 
 // Cargo domain models
 export interface Area {
@@ -105,29 +109,34 @@ const isDevelopment = process.env.NODE_ENV === 'development' || false;
 class CargoVizAPIClient extends ApiClient {
   constructor() {
     // More defensive environment variable handling
-    const apiUrl = typeof __API_URL__ !== 'undefined' && __API_URL__ ? __API_URL__ : window._env_?.CARGOVIZ_API_URL ??
-    // runtime fallback for iframe previews
-    'https://api.cargoviz.com/api';
-    const timeout = 10000;
+    const apiUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__ : 'https://api.cargoviz.com/api';
     super({
       baseURL: apiUrl,
-      timeout: timeout
+      timeout: 10000
     });
   }
 
   // Authentication
-  async login(email: string, password: string): Promise<TokenResponse> {
+  async login(email: string, password: string): Promise<LoginResponse> {
     // In development, use mock data
-    if (isDevelopment) {
+    if (process.env.NODE_ENV === 'development') {
       return Promise.resolve({
         token: 'mock-token-for-development',
         user: mockUser
       });
     }
-    return await this.post<TokenResponse>('/token', {
+    // dev log so we can confirm the final URL
+    if (import.meta.env.DEV) {
+      /* eslint-disable no-console */
+      console.info('[login] →', __API_URL__ + __LOGIN_PATH__);
+    }
+    const {
+      data
+    } = await this.client.post<LoginResponse>(__LOGIN_PATH__, {
       email,
       password
     });
+    return data;
   }
 
   // Projects

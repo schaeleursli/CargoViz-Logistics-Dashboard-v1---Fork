@@ -19,3 +19,13 @@
 ## [unreleased] – Env handling
 - Switched from runtime `import.meta.env.*` reads to compile-time `__API_URL__`
   constant to prevent crashes when envs aren't injected (MagicPatterns fix).
+## [unreleased] – Auth flow hardening
+- Switched cargoVizAPI client to use compile-time __API_URL__.
+- Added strong typing (`LoginResponse`) and null-checks around login().
+- Persisted token & user to localStorage.
+- Fixed "Right side of assignment cannot be destructured" error on bad responses.
+## [unreleased] – Fix 404 on login
+- Parametrised login route via VITE_CARGOVIZ_LOGIN_PATH.
+- Added logging of resolved login URL in development mode.
+## [unreleased] – Fix missing __LOGIN_PATH__
+- Guaranteed compile-time injection of __LOGIN_PATH__ with fallback '/auth/login'.

@@ -47,26 +47,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     }
     setLoading(false);
   };
-  const login = async (email: string, password: string) => {
+  const login: AuthContextType['login'] = async (email, password) => {
     try {
-      const {
-        token,
-        user: userData
-      } = await cargoVizAPI.login(email, password);
-      // Store auth data in localStorage
-      localStorage.setItem('cargoviz_token', token);
-      localStorage.setItem('cargoviz_user', JSON.stringify(userData));
-      setUser(userData);
+      const res = await cargoVizAPI.login(email, password);
+      // Guard against empty / malformed payloads
+      if (!res || !res.token || !res.user) {
+        throw new Error('Invalid credentials or empty response from server');
+      }
+      // Persist session
+      localStorage.setItem('cargoviz_token', res.token);
+      localStorage.setItem('cargoviz_user', JSON.stringify(res.user));
+      setUser(res.user);
       setIsAuthenticated(true);
       return {
         success: true,
-        user: userData
+        user: res.user
       };
     } catch (error) {
-      console.error('Login failed:', error);
+      // Axios errors come through the ApiClient interceptor as ApiError
+      const message = error instanceof Error ? error.message : 'Login failed – unknown error';
+      console.error('[Auth] login error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Login failed'
+        error: message
       };
     }
   };

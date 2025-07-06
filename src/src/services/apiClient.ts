@@ -6,7 +6,7 @@ export interface ApiError {
   status: number;
   message: string;
   errors?: Record<string, unknown>;
-  timestamp?: string;
+  timestamp: string;
 }
 
 // Helper to unwrap API responses

@@ -4,9 +4,10 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 // Developer warning for missing API URL using more reliable check
 const isDevelopment = process.env.NODE_ENV === 'development';
-if (isDevelopment && (typeof __API_URL__ === 'undefined' || !__API_URL__)) {
+const apiUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__ : null;
+if (isDevelopment && !apiUrl) {
   // eslint-disable-next-line no-console
-  console.warn('⚠️  VITE_CARGOVIZ_API_URL is missing; default endpoint in use.');
+  console.warn('⚠️  __API_URL__ is empty – check VITE_CARGOVIZ_API_URL in .env.local');
 }
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');

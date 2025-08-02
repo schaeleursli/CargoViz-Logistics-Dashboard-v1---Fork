@@ -10,10 +10,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "types": ["vite/client"],
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"]
